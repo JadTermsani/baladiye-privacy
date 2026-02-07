@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Opening Baladiye App (iOS & Android)</title>
-    <meta http-equiv="refresh" content="0; url=baladiye://">
-    <script>
-        // Try to open the app immediately
-        window.location.href = "baladiye://";
-        
-        // Fallback: redirect to privacy policy after 1 second if app doesn't open
-        setTimeout(function() {
-            window.location.href = "index.html";
-        }, 1000);
-    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -37,6 +27,7 @@
         p {
             opacity: 0.9;
             font-size: 1rem;
+            margin-bottom: 12px;
         }
         .spinner {
             border: 3px solid rgba(255,255,255,0.3);
@@ -51,6 +42,31 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 14px 28px;
+            background: white;
+            color: #3f5e4a;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .instructions {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -58,7 +74,72 @@
         <div class="spinner"></div>
         <h1>Opening Baladiye...</h1>
         <p>Works on both iOS and Android</p>
-        <p style="margin-top: 12px; font-size: 0.9rem;">If the app doesn't open automatically, <a href="baladiye://" style="color: white; text-decoration: underline;">click here</a></p>
+        
+        <div id="instagram-warning" class="hidden instructions">
+            <p><strong>Tap the menu (⋯) in the top right</strong></p>
+            <p>Then select <strong>"Open in Browser"</strong> or <strong>"Open in Safari/Chrome"</strong></p>
+            <a href="baladiye://" class="button" style="margin-top: 16px;">Open Baladiye App</a>
+        </div>
+        
+        <div id="normal-view">
+            <a href="baladiye://" class="button">Open Baladiye App</a>
+        </div>
     </div>
+
+    <script>
+        // Detect Instagram in-app browser
+        const isInstagram = /Instagram/i.test(navigator.userAgent);
+        
+        if (isInstagram) {
+            document.getElementById('instagram-warning').classList.remove('hidden');
+            document.getElementById('normal-view').classList.add('hidden');
+        }
+        
+        // Try multiple methods to open the app
+        function openApp() {
+            const deepLink = "baladiye://";
+            
+            // Method 1: Direct location change
+            window.location.href = deepLink;
+            
+            // Method 2: Try with iframe (works in some browsers)
+            setTimeout(function() {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = deepLink;
+                document.body.appendChild(iframe);
+                
+                setTimeout(function() {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 100);
+            
+            // Method 3: Try window.open
+            setTimeout(function() {
+                window.open(deepLink, '_blank');
+            }, 200);
+        }
+        
+        // Auto-try on load (unless Instagram)
+        if (!isInstagram) {
+            openApp();
+            
+            // Fallback: redirect to privacy policy after 2 seconds if app doesn't open
+            setTimeout(function() {
+                // Only redirect if still on this page
+                if (document.visibilityState === 'visible') {
+                    window.location.href = "index.html";
+                }
+            }, 2000);
+        }
+        
+        // Handle button clicks
+        document.querySelectorAll('a[href="baladiye://"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openApp();
+            });
+        });
+    </script>
 </body>
 </html>
